@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en" class="transition-colors duration-300">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EYEZEN Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class'
+    };
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    .gradient-text {
+      background: linear-gradient(to right, #3b82f6, #60a5fa, #2563eb);
+      background-clip: text;
+      -webkit-background-clip: text; /* Safari/Chrome */
+      -moz-background-clip: text;    /* Firefox (older) */
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+    }
+  </style>
+</head>
+<body class="bg-blue-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-colors duration-300">
+
+  <!-- Login Page -->
+  <section class="login h-screen flex items-center justify-center bg-blue-100 dark:bg-gray-800">
+    <div class="bg-white dark:bg-gray-900 rounded-2xl p-8 w-full max-w-md shadow-md">
+      
+      <!-- Logo -->
+      <div class="flex justify-center mb-4">
+        <img src="assests/logo.png" alt="EYEZEN Logo" class="h-16 w-16">
+      </div>
+
+      <h1 class="text-xl font-semibold text-center mb-2">👁️ Welcome to <span class="gradient-text">EYEZEN</span></h1>
+      <p class="text-center text-sm text-gray-500 dark:text-gray-300 mb-6">Start your focused session</p>
+
+      <div class="space-y-4">
+        <input id="name" type="text" placeholder="Your Name" class="w-full border rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-800 dark:border-gray-600 dark:text-white">
+        <input id="age" type="number" placeholder="Age" class="w-full border rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-800 dark:border-gray-600 dark:text-white">
+        <label class="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-300">
+          <input id="specs" type="checkbox" class="accent-blue-500">
+          <span>I wear glasses</span>
+        </label>
+        <button onclick="submitForm()" class="w-full bg-blue-500 text-white py-2 rounded-xl hover:bg-blue-600 transition">Start Monitoring</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Dashboard -->
+  <main class="dashboard hidden min-h-screen px-6 py-6 bg-blue-50 dark:bg-gray-900">
+    <div class="flex flex-col items-center mb-6">
+      <div class="flex items-center space-x-4">
+        <img src="assests/logo.png" alt="EYEZEN Logo" class="h-16 w-16">
+        <span class="text-4xl font-extrabold gradient-text">EYEZEN</span>
+      </div>
+
+      <h1 class="text-2xl font-semibold text-center text-blue-600 dark:text-white mt-4">Your Dashboard</h1>
+
+      <button onclick="toggleDarkMode()" class="mt-4 text-sm bg-blue-200 px-4 py-2 rounded-xl dark:bg-gray-700 dark:text-white">
+        🌓 Toggle Theme
+      </button>
+    </div>
+
+    <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Blink Stats -->
+      <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm flex flex-col justify-center items-center">
+        <p class="text-gray-500 dark:text-gray-300 text-sm">Blinks Today</p>
+        <p id="blinkCount" class="text-4xl font-bold mt-2">0</p>
+        <p id="blinkRate" class="text-sm text-gray-400 mt-1">Blinks/min: 0</p>
+
+        <!-- Recommendations -->
+        <div id="recommendationCard" class="mt-4 w-full text-sm text-center p-3 rounded-xl bg-yellow-100 text-yellow-800 dark:bg-yellow-300 dark:text-black">
+          💡 Recommendations will appear here.
+        </div>
+      </div>
+
+      <!-- Screen Time -->
+      <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm flex flex-col justify-center items-center">
+        <p class="text-gray-500 dark:text-gray-300 text-sm">Screen Time</p>
+        <p id="screenTime" class="text-4xl font-bold mt-2">00:00:00</p>
+      </div>
+    </div>
+
+    <div class="max-w-4xl mx-auto mt-10">
+      <h2 class="text-lg font-semibold mb-2 text-center text-blue-700 dark:text-white">Daily Blink Health</h2>
+      <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm">
+        <canvas id="blinkPieChart" class="mx-auto w-60 h-60"></canvas>
+      </div>
+    </div>
+
+    <!-- Reports Section -->
+    <div class="max-w-4xl mx-auto mt-10">
+      <h2 class="text-lg font-semibold mb-2 text-center text-blue-700 dark:text-white">Reports & Insights</h2>
+      <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm">
+        <p class="text-center text-sm text-gray-500 dark:text-gray-300">Here you can view your weekly and monthly screen time and blink rate statistics.</p>
+        
+        <!-- Chart for Reports -->
+        <canvas id="reportChart" class="mx-auto w-full h-60 mt-4"></canvas>
+
+        <!-- Example of reports in table -->
+        <div class="overflow-x-auto mt-4">
+          <table class="min-w-full table-auto text-sm">
+            <thead>
+              <tr class="bg-blue-100 dark:bg-gray-700 text-gray-700 dark:text-white">
+                <th class="px-4 py-2">Date</th>
+                <th class="px-4 py-2">Screen Time (hrs)</th>
+                <th class="px-4 py-2">Blinks</th>
+                <th class="px-4 py-2">Blink Rate (blinks/min)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Dynamic Rows for Report Data -->
+              <tr class="bg-white dark:bg-gray-800">
+                <td class="px-4 py-2">2025-04-17</td>
+                <td class="px-4 py-2">2.5</td>
+                <td class="px-4 py-2">150</td>
+                <td class="px-4 py-2">12</td>
+              </tr>
+              <tr class="bg-gray-50 dark:bg-gray-600">
+                <td class="px-4 py-2">2025-04-16</td>
+                <td class="px-4 py-2">3.1</td>
+                <td class="px-4 py-2">180</td>
+                <td class="px-4 py-2">15</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- JS -->
+  <script>
+    const alertSound = new Audio("assests/alert.mp3");
+    let blinkPie = null;
+    let reportChart = null;
+    let healthySeconds = 0;
+    let lowBlinkSeconds = 0;
+    let secondsElapsed = 0;
+    let alertPlayCount = 0;
+    const MAX_ALERTS = 3;
+
+    function submitForm() {
+      const name = document.getElementById("name").value.trim();
+      const age = document.getElementById("age").value.trim();
+      const specs = document.getElementById("specs").checked;
+
+      if (name === "" || age === "") {
+        alert("Please enter your name and age to start.");
+        return;
+      }
+
+      fetch('/api/user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, age, specs })
+      }).then(() => {
+        document.querySelector('.login').style.display = 'none';
+        document.querySelector('.dashboard').style.display = 'block';
+        startDashboard();
+      });
+    }
+
+    function parseTime(timeStr) {
+      const [h, m, s] = timeStr.split(':').map(Number);
+      return h * 3600 + m * 60 + s;
+    }
+
+    function startDashboard() {
+      fetch('/api/reset_timer', { method: 'POST' });
+      initPieChart();
+      initReportChart();
+
+      setInterval(() => {
+        secondsElapsed++;
+
+        fetch('/api/data')
+          .then(res => res.json())
+          .then(data => {
+            document.getElementById('blinkCount').textContent = data.blinks;
+            document.getElementById('screenTime').textContent = data.screen_time;
+
+            const totalSeconds = parseTime(data.screen_time);
+            const bpm = totalSeconds > 0 ? Math.round(data.blinks / (totalSeconds / 60)) : 0;
+            document.getElementById('blinkRate').textContent = `Blinks/min: ${bpm}`;
+            updateRecommendation(bpm);
+
+            if (bpm >= 7) healthySeconds++;
+            else if (totalSeconds > 0) lowBlinkSeconds++;
+
+            updatePieChart();
+            updateReportChart();
+
+            if (secondsElapsed > 60 && bpm < 6 && alertPlayCount < MAX_ALERTS) {
+              alertSound.play();
+              alertPlayCount++;
+            }
+          });
+      }, 1000);
+    }
+
+    function updateRecommendation(bpm) {
+      const recommendationCard = document.getElementById('recommendationCard');
+      if (!recommendationCard) return;
+
+      if (bpm >= 15) {
+        recommendationCard.innerHTML = "✅ Great! Your blink rate is healthy.";
+      } else if (bpm >= 10) {
+        recommendationCard.innerHTML = "😊 Good. Try to blink a little more frequently.";
+      } else if (bpm >= 6) {
+        recommendationCard.innerHTML = "⚠️ Blink rate is low. Take short breaks and rest your eyes.";
+      } else {
+        recommendationCard.innerHTML = "🚨 Very low blink rate! Consider taking a break or doing eye exercises.";
+      }
+    }
+
+    function initPieChart() {
+      const ctx = document.getElementById('blinkPieChart').getContext('2d');
+      blinkPie = new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: ['Healthy Blinking', 'Low Blinking'],
+          datasets: [{
+            label: 'Blink Health',
+            data: [0, 1],
+            backgroundColor: ['#22c55e', '#ef4444'],
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              labels: {
+                color: getComputedStyle(document.body).color
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function initReportChart() {
+      const ctx = document.getElementById('reportChart').getContext('2d');
+      reportChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: ['2025-04-14', '2025-04-15', '2025-04-16', '2025-04-17'],
+          datasets: [{
+            label: 'Blinks',
+            data: [120, 150, 180, 200],
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59, 130, 246, 0.2)',
+            borderWidth: 2,
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              labels: {
+                color: getComputedStyle(document.body).color
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function updatePieChart() {
+      if (blinkPie) {
+        blinkPie.data.datasets[0].data = [healthySeconds, lowBlinkSeconds];
+        blinkPie.update();
+      }
+    }
+
+    function updateReportChart() {
+      if (reportChart) {
+        reportChart.data.datasets[0].data = [120, 150, 180, 200];  // Example data, replace with actual data
+        reportChart.update();
+      }
+    }
+
+    function toggleDarkMode() {
+      document.documentElement.classList.toggle('dark');
+
+      if (blinkPie) {
+        const color = document.documentElement.classList.contains('dark') ? 'white' : 'black';
+        blinkPie.options.plugins.legend.labels.color = color;
+        blinkPie.update();
+      }
+    }
+  </script>
+</body>
+</html>
